@@ -1,6 +1,0 @@
-@GardenHelper_HostAddress = http://localhost:5046
-
-GET {{GardenHelper_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

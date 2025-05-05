@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace DataInputService.Domain
 {
-    public class AppDbContext : DbContext
+    public class PlantDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
+        public PlantDbContext(DbContextOptions<PlantDbContext> options)
             : base(options) { }
 
         public DbSet<Plant> Plants { get; set; }

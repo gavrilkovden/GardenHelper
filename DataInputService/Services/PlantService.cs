@@ -8,10 +8,10 @@ namespace DataInputService.Services
     public class PlantService : IPlantService
     {
         private readonly IMapper _mapper;
-        private readonly AppDbContext _context;
+        private readonly PlantDbContext _context;
         private readonly IRabbitMqPublisher _publisher;
 
-        public PlantService(IMapper mapper, AppDbContext context, IRabbitMqPublisher publisher)
+        public PlantService(IMapper mapper, PlantDbContext context, IRabbitMqPublisher publisher)
         {
             _mapper = mapper;
             _context = context;

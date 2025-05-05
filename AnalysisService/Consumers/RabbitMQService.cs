@@ -11,12 +11,13 @@ namespace AnalysisService.Consumers
         private readonly string _hostName;  // Имя хоста, на котором работает RabbitMQ
         private bool _isInitialized;  // Флаг, указывающий, что RabbitMQ успешно инициализирован
 
-        // Конструктор, принимающий имя хоста и логгер
-        public RabbitMQService(string hostName, ILogger<RabbitMQService> logger)
+
+        public RabbitMQService(IConfiguration configuration, ILogger<RabbitMQService> logger)
         {
-            _hostName = hostName;  // Инициализируем имя хоста
-            _logger = logger;  // Инициализируем логгер
+            _hostName = configuration["RabbitMQ:HostName"];
+            _logger = logger;
         }
+
 
         // Асинхронный метод инициализации подключения к RabbitMQ
         public async Task InitializeAsync()

@@ -1,8 +1,11 @@
 ﻿using AnalysisService.Cache;
 using AnalysisService.Models;
 using AnalysisService.Services;
+using MailKit.Net.Smtp;
+using MimeKit;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 
@@ -51,8 +54,8 @@ namespace AnalysisService.Consumers
                     var root = doc.RootElement;
 
                     // Извлекаем userId и само тело прогноза погоды (в виде JSON-строки)
-                    var userId = root.GetProperty("userId").GetString();
-                    var weatherJson = root.GetProperty("weatherJson").GetRawText(); // сохраняем вложенный JSON как строку
+                    var userId = root.GetProperty("UserId").GetString();
+                    var weatherJson = root.GetProperty("WeatherJson").GetRawText(); // сохраняем вложенный JSON как строку
 
                     // Если userId отсутствует — логируем предупреждение и пропускаем сообщение
                     if (string.IsNullOrWhiteSpace(userId))
@@ -72,7 +75,29 @@ namespace AnalysisService.Consumers
                     {
                         // Запускаем анализ и логируем результат
                         var result = await _analysisService.AnalyzeAsync(buffer);
-                        _logger.LogInformation($"Результат анализа для {userId}: {result.Recommendation}");
+                        _logger.LogInformation($"Результат анализа для userId {userId}: {result.Recommendation}");
+
+                        // ✅ Отправляем email
+                        var email = "denisgavrilkov1@gmail.com"; //  Gmail
+
+                        var mes = new MimeMessage();
+                        mes.From.Add(MailboxAddress.Parse(email));
+                        mes.To.Add(MailboxAddress.Parse(email)); // можно отправить самому себе
+                        mes.Subject = $"Рекомендации от GardenHelper";
+
+                        mes.Body = new TextPart("plain")
+                        {
+                            Text = $"{result.Recommendation}" +
+                        $"{result.NeedsFertilizing}" +
+                        $"{result.NeedsWatering}" +
+                        $"{result.RiskLevel}"
+                        };
+
+                        using var client = new SmtpClient();
+                        await client.ConnectAsync("smtp.gmail.com", 587, false);
+                        await client.AuthenticateAsync(email, "ryni tkzy ikbo ddqh"); // сюда вставь Gmail App Password
+                        await client.SendAsync(mes);
+                        await client.DisconnectAsync(true);
 
                         // Удаляем буфер из Redis, так как анализ завершён
                         await _redisBufferService.DeleteRequestAsync(userId);

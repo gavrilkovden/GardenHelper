@@ -1,6 +1,8 @@
 ﻿using AnalysisService.Cache;
 using AnalysisService.Models;
 using AnalysisService.Services;
+using MailKit.Net.Smtp;
+using MimeKit;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -47,6 +49,29 @@ namespace AnalysisService.Consumers
                 {
                     var result = await _analysisService.AnalyzeAsync(buffer);
                     _logger.LogInformation($"Результат анализа: {result.Recommendation}");
+
+                    // ✅ Отправляем email
+                    var email = "denisgavrilkov1@gmail.com"; //  Gmail
+
+                    var mes = new MimeMessage();
+                    mes.From.Add(MailboxAddress.Parse(email));
+                    mes.To.Add(MailboxAddress.Parse(email)); // можно отправить самому себе
+                    mes.Subject = $"Рекомендации от GardenHelper";
+
+                    mes.Body = new TextPart("plain")
+                    {
+                        Text = $"{result.Recommendation}" +
+                        $"{result.NeedsFertilizing}" +
+                        $"{result.NeedsWatering}" +
+                        $"{result.RiskLevel}"
+                    };
+
+                    using var client = new SmtpClient();
+                    await client.ConnectAsync("smtp.gmail.com", 587, false);
+                    await client.AuthenticateAsync(email, "ryni tkzy ikbo ddqh"); // сюда вставь Gmail App Password
+                    await client.SendAsync(mes);
+                    await client.DisconnectAsync(true);
+
                     await _redisBufferService.DeleteRequestAsync(userId);
                 }
                 else

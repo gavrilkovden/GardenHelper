@@ -1,6 +1,7 @@
 using AnalysisService.Cache;
 using AnalysisService.Consumers;
 using AnalysisService.Services;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,11 +11,20 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration["Redis:ConnectionString"];  
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
 builder.Services.AddSingleton<PlantDataConsumer>();
 builder.Services.AddSingleton<WeatherDataConsumer>();
 builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
+builder.Services.AddHostedService<InitRabbitMQService>();
+
 builder.Services.AddSingleton<IRedisBufferService, RedisBufferService>();
-builder.Services.AddSingleton<IAIAnalysisService, AIAnalysisService>();
+builder.Services.AddHttpClient<IAIAnalysisService, AIAnalysisService>();
 
 var app = builder.Build();
 

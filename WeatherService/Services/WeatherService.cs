@@ -44,32 +44,30 @@ namespace WeatherService.Services
 
         public async Task<string> GetWeatherAsync(string userId)
         {
+            var location = await _context.Locations.FirstOrDefaultAsync(x => x.UserId == userId);
+            var apiKey = _configuration["OpenWeather:ApiKey"];
+            var url = $"https://api.openweathermap.org/data/2.5/weather?lat={location.Latitude}&lon={location.Longitude}&units=metric&appid={apiKey}&lang=ru";
+            var httpClient = _httpClientFactory.CreateClient();
+            var content = await httpClient.GetStringAsync(url);
+            var weatherMessage = new
+            {
+                UserId = userId,
+                WeatherJson = content
+            };
             // Пытаемся получить из кэша
             var cacheKey = $"weather:{userId}"; // Это создаёт строку-ключ для Redis, чтобы сохранить прогноз погоды отдельно для каждого пользователя.
             var cachedWeather = await _redisDb.StringGetAsync(cacheKey); //здесь проверяем есть ли по этому ключу уже в БД ответ
 
             if (cachedWeather.HasValue) // если ответ уже есть в редис то его и возвращаем
             {
+                // Публикуем прогноз в RabbitMQ!
+                await _rabbitMQPublisher.PublishAsync(weatherMessage);
                 return cachedWeather;
             }
 
             // Если в кэше нет — идём в OpenWeather
-            var location = await _context.Locations.FirstOrDefaultAsync(x => x.UserId == userId);
             if (location == null)
                 throw new Exception("User location not found.");
-
-            var apiKey = _configuration["OpenWeather:ApiKey"];
-            var url = $"https://api.openweathermap.org/data/2.5/weather?lat={location.Latitude}&lon={location.Longitude}&units=metric&appid={apiKey}&lang=ru";
-
-            var httpClient = _httpClientFactory.CreateClient();
-            var content = await httpClient.GetStringAsync(url);
-
-            var weatherMessage = new
-            {
-                UserId = userId,
-                WeatherJson = content
-            };
-
 
             // Сохраняем в кэш на 30 минут
             await _redisDb.StringSetAsync(cacheKey, content, TimeSpan.FromMinutes(60)); // здесь значение cacheKey берем из начала метода где мы его сами и создавали

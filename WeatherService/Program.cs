@@ -27,6 +27,10 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Инициализация RabbitMQ
+var rabbitMqPublisher = app.Services.GetRequiredService<IRabbitMqPublisher>();
+await rabbitMqPublisher.InitializeAsync("localhost");  // Убедитесь, что используете правильное имя хоста
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

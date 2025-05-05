@@ -30,7 +30,7 @@ namespace WeatherService.Services
             {
                 var factory = new ConnectionFactory
                 {
-                    HostName = "rabbitmq",  // Имя сервиса из docker-compose
+                    HostName = "localhost",  // Имя сервиса из docker-compose
                     Port = 5672,
                     UserName = "guest",
                     Password = "guest"
@@ -66,7 +66,7 @@ namespace WeatherService.Services
                 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
                 await _channel.BasicPublishAsync(
                     exchange: "",
-                    routingKey: typeof(T).Name, // или строгое имя очереди
+                    routingKey: "weatherContents", // или строгое имя очереди
                     body: body
                 );
 

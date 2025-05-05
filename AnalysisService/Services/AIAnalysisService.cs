@@ -2,17 +2,20 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
+using AnalysisService.Cache;
 
 namespace AnalysisService.Services
 {
     public class AIAnalysisService : IAIAnalysisService
     {
         private readonly IConfiguration _configuration;
+        private readonly IRedisBufferService _redisBufferService;
         private readonly HttpClient _httpClient;
 
-        public AIAnalysisService(HttpClient httpClient, IConfiguration configuration)
+        public AIAnalysisService(HttpClient httpClient, IConfiguration configuration, IRedisBufferService redisBufferService )
         {
             _httpClient = httpClient;
+            _redisBufferService = redisBufferService;
             _configuration = configuration;
         }
 
@@ -23,7 +26,10 @@ namespace AnalysisService.Services
                          $"Влажность почвы: {request.PlantData.SoilHumidity}%\n" +
                          $"Кислотность почвы: {request.PlantData.SoilPh}\n" +
                          $"Погодные данные (JSON): {request.WeatherJson}\n" +
-                         $"Дай рекомендации: нужно ли поливать, удобрять, какие риски? и не только по этому растению но и вцелом что может быть полезно дачнику или огороднику";
+                         $"Дай рекомендации: нужно ли поливать, с учетом полученных погодных данны,нужно ли удобрять, какие риски? " +
+                         $"но и вцелом что может быть полезно дачнику или огороднику. Все рекомендации должны быть для конкретных актуальных условий, а не обобщенные!!!" +
+                         $"если в полученном прогнозе погоды для этого местоположения предсказываются заморозки или " +
+                         $"другие любые риски, дай полезные дачнику рекомендации. Также дай прогноз погоды на ближайшие сутки для данной локации";
 
             var requestBody = new
             {

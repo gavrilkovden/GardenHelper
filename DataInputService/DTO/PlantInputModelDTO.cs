@@ -2,7 +2,7 @@
 {
     public class PlantInputModelDTO
     {
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public string PlantType { get; set; }
         public float SoilTemperature { get; set; }
         public float SoilHumidity { get; set; }

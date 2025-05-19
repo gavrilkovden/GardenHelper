@@ -1,25 +1,30 @@
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Загружаем конфигурацию из ocelot.json
+builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Регистрируем Ocelot
+builder.Services.AddOcelot();
+
+var configSection = builder.Configuration.GetSection("Routes");
+
+if (!configSection.Exists())
+{
+    Console.WriteLine("Ocelot routes section not found!");
+}
+else
+{
+    Console.WriteLine("Ocelot routes section loaded.");
+}
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+// Используем Ocelot
+await app.UseOcelot();
 
 app.Run();

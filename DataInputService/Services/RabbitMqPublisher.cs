@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text;
 using RabbitMQ.Client;
+using Microsoft.Extensions.Logging;
 
 namespace DataInputService.Services
 {
@@ -29,12 +30,13 @@ namespace DataInputService.Services
             {
                 var factory = new ConnectionFactory
                 {
-                    HostName = "localhost",  // Имя сервиса из docker-compose
+                    //HostName = "localhost",  // Имя сервиса из docker-compose
+                    HostName = "rabbitmq",  // Имя сервиса из docker-compose
                     Port = 5672,
                     UserName = "guest",
                     Password = "guest"
                 };
-
+                
                 _connection = await factory.CreateConnectionAsync();
                 _channel = await _connection.CreateChannelAsync();
 
@@ -70,6 +72,7 @@ namespace DataInputService.Services
                 );
 
                 _logger.LogInformation("Успешно опубликовано сообщение типа: {Type}", typeof(T).Name);
+
             }
             catch (Exception ex)
             {

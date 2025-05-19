@@ -22,4 +22,5 @@ RUN dotnet publish "./ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /app/publish/ocelot.json ./ocelot.json
 ENTRYPOINT ["dotnet", "ApiGateway.dll"]

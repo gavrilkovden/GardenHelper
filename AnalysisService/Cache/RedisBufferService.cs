@@ -28,6 +28,13 @@ namespace AnalysisService.Cache
             await _db.StringSetAsync(GetKey(userId), json, TimeSpan.FromMinutes(30));
         }
 
+        public async Task SaveAnalysisResultAsync(string userId, AnalysisResultDto result)
+        {
+            var key = $"analysis:result:{userId}";
+            var json = JsonSerializer.Serialize(result, _jsonOptions);
+            await _db.StringSetAsync(key, json, TimeSpan.FromMinutes(60)); // TTL 24 часа
+        }
+
         public async Task DeleteRequestAsync(string userId)
         {
             await _db.KeyDeleteAsync(GetKey(userId));

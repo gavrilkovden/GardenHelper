@@ -21,10 +21,11 @@ namespace DataInputService.Services
         public async Task ProcessAndSendAsync(PlantInputModelDTO model)
         {
             var plant = _mapper.Map<Plant>(model);
+
             _context.Plants.Add(plant);
             await _context.SaveChangesAsync();
 
-            await _publisher.PublishAsync(plant); // отправляем в RabbitMQ
+            await _publisher.PublishAsync(model); // отправляем в RabbitMQ
         }
     }
 }

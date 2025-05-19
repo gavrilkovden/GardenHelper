@@ -77,6 +77,8 @@ namespace AnalysisService.Consumers
                         var result = await _analysisService.AnalyzeAsync(buffer);
                         _logger.LogInformation($"Результат анализа для userId {userId}: {result.Recommendation}");
 
+                        await _redisBufferService.SaveAnalysisResultAsync(userId, result); // сохраяняем в redis для того чтобы в последующем результат отсюда забирать и выводить клиенту при необходимости
+
                         // ✅ Отправляем email
                         var email = "denisgavrilkov1@gmail.com"; //  Gmail
 

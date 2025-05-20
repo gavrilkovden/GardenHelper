@@ -40,15 +40,20 @@ namespace AnalysisService.Consumers
                 _logger.LogInformation($"Получены данные от plants: {message}");
 
                 var plantData = JsonSerializer.Deserialize<PlantDataDto>(message);
+
+              //  _logger.LogInformation($"Получены да {plantData.PlantType}");
                 var userId = plantData.UserId;
 
                 var buffer = await _redisBufferService.GetRequestAsync(userId) ?? new AnalysisRequest();
                 buffer.PlantData = plantData;
+                _logger.LogInformation($"plants из буфера: {buffer.PlantData}");
 
                 if (!string.IsNullOrWhiteSpace(buffer.WeatherJson))
                 {
                     var result = await _analysisService.AnalyzeAsync(buffer);
                     _logger.LogInformation($"Результат анализа: {result.Recommendation}");
+
+                    await _redisBufferService.SaveAnalysisResultAsync(userId, result); // сохраяняем в redis для того чтобы в последующем результат отсюда забирать и выводить клиенту при необходимости
 
                     // ✅ Отправляем email
                     var email = "denisgavrilkov1@gmail.com"; //  Gmail

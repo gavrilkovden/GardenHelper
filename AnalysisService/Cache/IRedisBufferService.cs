@@ -7,5 +7,6 @@ namespace AnalysisService.Cache
         Task DeleteRequestAsync(string userId);
         Task<AnalysisRequest?> GetRequestAsync(string userId);
         Task SaveRequestAsync(string userId, AnalysisRequest request);
+        Task SaveAnalysisResultAsync(string userId, AnalysisResultDto result);
     }
 }

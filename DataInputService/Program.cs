@@ -2,6 +2,8 @@ using DataInputService.Domain;
 using DataInputService.Mappings;
 using DataInputService.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +24,7 @@ var app = builder.Build();
 
 // Инициализация RabbitMQ
 var rabbitMqPublisher = app.Services.GetRequiredService<IRabbitMqPublisher>();
-await rabbitMqPublisher.InitializeAsync("localhost");  // Убедитесь, что используете правильное имя хоста
+await rabbitMqPublisher.InitializeAsync("rabbitmq");  // Убедитесь, что используете правильное имя хоста
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,5 +38,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//для применения миграций и создания базы данных в докере, если ее еще нет
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PlantDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();

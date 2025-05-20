@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - analysisservice
+      - datainputservice
+      - weatherservice
+
+    environment:
+    - ASPNETCORE_URLS=http://+:8080
+
+  analysisservice:
+    image: ${DOCKER_REGISTRY-}analysisservice
+    build:
+      context: .
+      dockerfile: AnalysisService/Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+
+
+  datainputservice:
+    image: ${DOCKER_REGISTRY-}datainputservice
+    build:
+      context: .
+      dockerfile: DataInputService/Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+
+
+  weatherservice:
+    image: ${DOCKER_REGISTRY-}weatherservice
+    build:
+      context: .
+      dockerfile: WeatherService/Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Den27051988"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+

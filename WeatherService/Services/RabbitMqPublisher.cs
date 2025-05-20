@@ -30,7 +30,8 @@ namespace WeatherService.Services
             {
                 var factory = new ConnectionFactory
                 {
-                    HostName = "localhost",  // Имя сервиса из docker-compose
+                    //HostName = "localhost",  // Имя сервиса из docker-compose
+                    HostName = "rabbitmq",  // Имя сервиса из docker-compose
                     Port = 5672,
                     UserName = "guest",
                     Password = "guest"

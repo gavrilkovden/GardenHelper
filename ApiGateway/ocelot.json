@@ -1,0 +1,57 @@
+﻿{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/Analysis/analyze",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analysisservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/Analysis/analyze",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/PlantInput",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "datainputservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/PlantInput",
+      "UpstreamHttpMethod": [ "POST" ],
+      "Priority": 1
+    },
+    {
+      "DownstreamPathTemplate": "/api/Weather/location",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "weatherservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/Weather/location",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Weather/forecast",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "weatherservice",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/Weather/forecast",
+      "UpstreamHttpMethod": [ "GET" ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://apigateway:8080"
+  }
+}
+

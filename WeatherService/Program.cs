@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using System.Globalization;
 using WeatherService.Domain;
 using WeatherService.Services;
 
@@ -29,7 +30,7 @@ var app = builder.Build();
 
 // Инициализация RabbitMQ
 var rabbitMqPublisher = app.Services.GetRequiredService<IRabbitMqPublisher>();
-await rabbitMqPublisher.InitializeAsync("localhost");  // Убедитесь, что используете правильное имя хоста
+await rabbitMqPublisher.InitializeAsync("rabbitmq");  // Убедитесь, что используете правильное имя хоста
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -43,6 +44,13 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//для применения миграций и создания базы данных в докере, если ее еще нет
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();
 

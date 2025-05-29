@@ -74,6 +74,17 @@ services:
       - RabbitMQ__Host=rabbitmq
 
 
+  authservice:
+    image: ${DOCKER_REGISTRY-}authservice
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    depends_on:
+     - sqlserver
+    environment:
+    - ASPNETCORE_URLS=http://+:80
+    
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
@@ -81,4 +92,8 @@ services:
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+
+
+
+
 
